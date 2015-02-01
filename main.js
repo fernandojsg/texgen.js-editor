@@ -46,11 +46,13 @@ TGUI.GeneratorDefinitions = {
 		parameters: {
 			"frequency": {
 				"type": "number",
-				"default": 1,
+				"default": 0.16,
+				"step": 0.01,
 			},
 			"offset": {
 				"type": "number",
 				"default": 0,
+				"step": 0.01,
 			},
 		}
 	},
@@ -59,11 +61,13 @@ TGUI.GeneratorDefinitions = {
 		parameters: {
 			"frequency": {
 				"type": "number",
-				"default": 1,
+				"default": 0.16,
+				"step": 0.01,
 			},
 			"offset": {
 				"type": "number",
 				"default": 0,
+				"step": 0.01,
 			},
 		}
 	},
@@ -184,17 +188,6 @@ TGUI.Texture = function() {
 
 }
 
-/*
-function nextOperation( but, id ) {
-	
-	var nextOp = operations[ ( operations.indexOf( texture.steps[ id ].operation ) + 1 ) % operations.length ];
-	but.innerHTML = nextOp;
-	texture.steps[ id ].operation = nextOp;
-	
-	render();
-}
-*/
-
 function changeOperation( select, id ) {
 
 	texture.steps[ id ].operation = select.value;
@@ -218,26 +211,67 @@ function generateOperationSelect(id, operation) {
 }
 
 TGUI.Texture.prototype = {
+	
+	getStepById: function ( id ) {
+
+		for ( var i = 0; i < this.steps.length; i++ ) {
+			if ( this.steps[ i ].id == id )
+				return { index: i, step: this.steps[ i ] };
+		}
+
+		return { index: -1, value: null };
+	},
+
+	deleteStep: function ( id ) {
+
+		var step = this.getStepById( id );
+
+		if ( step.index !== -1 ) {
+
+			delete this.steps[ step.index ];
+			this.steps.splice( step.index, 1 );
+
+			this.regenerateStepList();
+			render();
+
+		}
+	},
+
+	regenerateStepList: function() {
+
+		var options = [];
+		
+		for (var i = 0; i < this.steps.length; i++ ) {
+			
+			var step = this.steps[ i ];
+			var select = generateOperationSelect( step.id, step.operation );
+			options.push( { value: step.id, html: select + ' (ID=' + step.id + ') ' + step.type +' <button onclick="deleteStep(this,' + step.id + ')" style="color:#f99;float:right">delete</button>'} );
+		}
+		
+		stepList.setOptions( options );
+
+		if ( this.steps.length > 0 ) {
+			
+			var lastId = this.steps[ this.steps.length - 1 ].id;
+			stepList.setValue( lastId );
+			generatorSelected( lastId );
+
+		}
+		else
+		{
+			if ( currentGenerator != null ) {
+				generatorPanels[ currentGenerator.type ].dom.style.display = "none";
+			}
+		}
+	},
+
 	add: function ( type, operation ) {
 
 		var id = this.counter++;
 		var machine = new TGUI.TextureStep( id, type );
 		this.steps.push( machine );
 
-		var options = [];
-		for (var i=0;i<this.steps.length;i++){
-			var step = this.steps[i];
-			var select = generateOperationSelect( step.id, step.operation );
-			options.push( { value: step.id, html: select + ' (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
-
-			//options.push( { value: step.id, html: '<button onclick="nextOperation(this, \''+(step.id)+'\')">'+step.operation+'</button> (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
-
-			//options.push( { value: step.id, html: '<button onclick="nextOperation(this, \''+(step.id)+'\')">'+step.operation+'</button> (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
-		}
-		
-		stepList.setOptions( options );
-		stepList.setValue( id );
-		generatorSelected( id );
+		this.regenerateStepList();
 
 	}
 }
@@ -312,6 +346,9 @@ function generatorSelected( id ) {
 		generatorPanels[ currentGenerator.type ].dom.style.display = "none";
 	}
 
+	if ( texture.steps[ id ] == null )
+		return;
+
 	currentGenerator = texture.steps[ id ];
 	var type = currentGenerator.type;
 	generatorPanels[ type ].dom.style.display = "block";
@@ -363,7 +400,7 @@ function init() {
 		var panel = new UI.CollapsiblePanel();
 		panel.setId( definitionId );
 
-		panel.addStatic( new UI.Text().setValue( 'PARAMS ' + definitionId ) );
+		panel.addStatic( new UI.Text().setValue( definitionId ) );
 		generatorPanels[ definitionId ] = panel;
 
 		panel.add( new UI.Break() );
@@ -372,6 +409,7 @@ function init() {
 		var parameters = TGUI.GeneratorDefinitions[ definitionId ].parameters;
 		TGUI.GeneratorDefinitions[ definitionId ].panel = panel;
 		TGUI.GeneratorDefinitions[ definitionId ].uiparameters = {};
+
 		for ( var idParam in parameters ) {
 		
 			var param = parameters[ idParam ];
@@ -387,6 +425,9 @@ function init() {
 
 				case "number": 
 					var c = new UI.Number().setWidth( '50px' ).onChange( update ).setId( idParam );
+					if ( param.step )			
+						c.step = param.step;
+
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c);
 
 					row.add( c );
@@ -480,6 +521,17 @@ function init3D() {
 	 
 	renderScene();	
 }
+
+
+function deleteStep( button, id ) {
+	
+	//if (confirm("Delete this step?")) 
+	{
+		texture.deleteStep( id );		
+//		render();
+	}
+}
+
 
 function showObject( button ) {
 

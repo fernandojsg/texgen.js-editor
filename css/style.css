@@ -45,6 +45,9 @@ body {
     background: #222;
 }
 
+button:active { 
+    background-color: #666;
+}
 
 button {
     background-color: #333;
@@ -52,6 +55,7 @@ button {
     color: #999;
     width: 60px;
     outline: none;
+    cursor: pointer;
 }
 
 #pluginlist button {
