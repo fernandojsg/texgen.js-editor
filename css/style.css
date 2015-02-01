@@ -79,3 +79,11 @@ b {
 .selected {
     border: 1px solid #ff9;
 }
+
+.src {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    color: #ff9;
+
+}
