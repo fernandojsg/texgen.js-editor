@@ -12,11 +12,11 @@ TGUI.GeneratorDefinitions = {
 		parameters: {
 			"size": {
 				"type": "vec2i",
-				"default": [32,32],
+				"default": [ 32, 32 ],
 			},
 			"position": {
 				"type": "vec2i",
-				"default": [0,0],
+				"default": [ 0, 0 ],
 			},
 		}
 	},
@@ -25,11 +25,11 @@ TGUI.GeneratorDefinitions = {
 		parameters: {
 			"size": {
 				"type": "vec2i",
-				"default": [32,32],
+				"default": [ 32, 32 ],
 			},
 			"offset": {
 				"type": "vec2i",
-				"default": [0,0],
+				"default": [ 0, 0 ],
 			},
 			"rowShift": {
 				"type": "number",
@@ -218,11 +218,10 @@ function generatorSelected( id ) {
 
 	for ( var idParam in TGUI.GeneratorDefinitions[ type ].parameters ) {
 
-		//param = TGUI.GeneratorDefinitions[ type ].parameters[idParam];
 		param = TGUI.GeneratorDefinitions[ type ].uiparameters[ idParam ];
-		var i = 0;
 		
-		param[ i ].setValue( currentGenerator.params[ idParam ] );
+		for ( var i = 0; i < param.length; i++ )
+			param[ i ].setValue( currentGenerator.params[ idParam ][ i ] );
 
 	}
 
