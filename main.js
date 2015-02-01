@@ -183,13 +183,19 @@ TGUI.TextureStep = function( id, type ) {
 
 function changeOperation( select, id ) {
 
-	texture.steps[ id ].operation = select.value;
-	texture.render();
+	var step = texture.getStepById( id );
+
+	if ( step.value !== null ) {
+
+		step.value.operation = select.value;
+		texture.render();
+
+	}
 }
 
 function generateOperationSelect(id, operation) {
 	
-	var html = '<select onchange="changeOperation(this, \''+(id)+'\')">';
+	var html = '<select onchange="changeOperation(this, '+id+')">';
 	for (var i = 0; i < operations.length; i++ ) {
 		if ( operation == operations[ i ] )
 			html+= '<option selected="selected" value="' + operations[ i ]+ '">' + operations[ i ] + '</option>';
