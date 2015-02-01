@@ -1,5 +1,5 @@
 # texgen.js-editor
-Proof of concept editor for [@mrdoob](https://twitter.com/mrdoob)'s [texgen.js](https://github.com/mrdoob/texgen.js) library.
+***Proof of concept*** editor for [@mrdoob](https://twitter.com/mrdoob)'s [texgen.js](https://github.com/mrdoob/texgen.js) library based on a concept from [@feiss](http://twitter.com/feiss).
 
 Uses:
 * [UI.js](https://github.com/mrdoob/three.js/blob/master/editor/js/libs/ui.js) library from [three.js editor](http://threejs.org/editor) for UI controls.
