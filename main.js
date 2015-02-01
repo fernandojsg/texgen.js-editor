@@ -1,5 +1,17 @@
 var textureSize = [ 256, 256 ];
 
+var operations = [
+	"=",
+	"+",
+	"-",
+	"*",
+	"/",
+	"&",
+	"^",
+	"min",
+	"max"
+];
+
 TGUI = {};
 
 TGUI.GeneratorDefinitions = {
@@ -169,29 +181,10 @@ TGUI.TextureStep = function( id, type ) {
 	this.operation = "+";
 }
 
-var operations = [
-	"=",
-	"+",
-	"-",
-	"/",
-	"&",
-	"^",
-	"min",
-	"max"
-];
-
-TGUI.Texture = function() {
-	
-	this.steps = [];
-	this.name = "Unknown";
-	this.counter = 0;
-
-}
-
 function changeOperation( select, id ) {
 
 	texture.steps[ id ].operation = select.value;
-	render();
+	texture.render();
 }
 
 function generateOperationSelect(id, operation) {
@@ -210,13 +203,88 @@ function generateOperationSelect(id, operation) {
 
 }
 
+
+TGUI.Texture = function() {
+	
+	this.steps = [];
+	this.name = "Unknown";
+	this.counter = 0;
+	this.width = textureSize[ 0 ];
+	this.height = textureSize[ 1 ];
+
+}
+
 TGUI.Texture.prototype = {
+
+	render: function () {
+
+		var code = 'var texture = new TG.Texture( ' + this.width +', ' + this.height + ' )';
+
+		var _texture = new TG.Texture( 256, 256 );
+
+		for ( var i = 0; i < texture.steps.length; i++ ) {
+
+			var step = texture.steps[ i ];
+			var definition = TGUI.GeneratorDefinitions[ step.type ];
+			var layer = new definition.generator;
+
+			var paramString = "";
+			for ( var id in step.params ) {
+		
+				layer.setParamValue( id, step.params[ id ] );
+				
+				if ( step.params[ id ] instanceof Array )
+					paramString += '.' + id + '( ' + step.params[ id ].join( ', ' ) + ' )';
+				else
+					paramString += '.' + id + '( ' + step.params[ id ] + ' )';
+					
+			}
+
+			switch( step.operation ) {
+
+				case '=': _texture.set( layer ); break;
+				case '+': _texture.add( layer ); break;
+				case '-': _texture.sub( layer ); break;
+				case '*': _texture.mul( layer ); break;
+				case '/': _texture.div( layer ); break;
+				case '&': _texture.and( layer ); break;
+				case '^': _texture.xor( layer ); break;
+				case 'min': _texture.min( layer ); break;
+				case 'max': _texture.max( layer ); break;
+
+			}
+
+			var operationsFunc = { //@todo remove
+				"=": "set",
+				"+": "add",
+				"-": "sub",
+				"*": "mul",
+				"/": "div",
+				"&": "and",
+				"^": "xor",
+				"min": "min",
+				"max": "max"
+			};
+
+			code += '\n\t.' + operationsFunc[ step.operation ] + '( new TG.' + step.type + '()' + paramString + ' )';
+
+		}
+		code+=";";
+		
+		ctx.putImageData( _texture.toImageData( ctx ), 0, 0 );
+
+		cube.material.map.needsUpdate = true;
+
+		document.getElementById("code").innerHTML = code;
+		Prism.highlightAll();
+
+	},
 	
 	getStepById: function ( id ) {
 
 		for ( var i = 0; i < this.steps.length; i++ ) {
 			if ( this.steps[ i ].id == id )
-				return { index: i, step: this.steps[ i ] };
+				return { index: i, value: this.steps[ i ] };
 		}
 
 		return { index: -1, value: null };
@@ -232,7 +300,7 @@ TGUI.Texture.prototype = {
 			this.steps.splice( step.index, 1 );
 
 			this.regenerateStepList();
-			render();
+			texture.render();
 
 		}
 	},
@@ -245,7 +313,7 @@ TGUI.Texture.prototype = {
 			
 			var step = this.steps[ i ];
 			var select = generateOperationSelect( step.id, step.operation );
-			options.push( { value: step.id, html: select + ' (ID=' + step.id + ') ' + step.type +' <button onclick="deleteStep(this,' + step.id + ')" style="color:#f99;float:right">delete</button>'} );
+			options.push( { value: step.id, html: select + ' (ID=' + step.id + ') ' + step.type +' <button onclick="texture.deleteStep(' + step.id + ')" style="color:#f99;float:right">delete</button>'} );
 		}
 		
 		stepList.setOptions( options );
@@ -272,59 +340,12 @@ TGUI.Texture.prototype = {
 		this.steps.push( machine );
 
 		this.regenerateStepList();
+		this.render();
 
 	}
 }
 
-var texture = new TGUI.Texture();
-
-function render() {
-
-	var _texture = new TG.Texture( 256, 256 );
-
-	for ( var i = 0; i < texture.steps.length; i++ ) {
-
-		var step = texture.steps[ i ];
-		var layer = new TGUI.GeneratorDefinitions[ step.type ].generator;
-
-		for ( var id in step.params ) {
-	
-			layer.setParamValue( id, step.params[ id ] );
-
-		}
-
-		switch( step.operation ) {
-
-			case '=': _texture.set( layer ); break;
-			case '+': _texture.add( layer ); break;
-			case '-': _texture.sub( layer ); break;
-			case 'x': _texture.mul( layer ); break;
-			case '/': _texture.div( layer ); break;
-			case '&': _texture.and( layer ); break;
-			case '^': _texture.xor( layer ); break;
-			case 'min': _texture.min( layer ); break;
-			case 'max': _texture.max( layer ); break;
-		}
-	}
-	
-	ctx.putImageData( _texture.toImageData( ctx ), 0, 0 );
-
-	cube.material.map.needsUpdate = true;
-
-}
-
-var stepList;
-
-function add( op ) {
-
-	texture.add( op );
-	render();
-
-}
-
-var currentGenerator = null;
-
-function update( e ) {
+function updateControlParameter( e ) {
 	
 	if ( e.srcElement.id.indexOf(".") !== -1 ) {
 
@@ -337,7 +358,7 @@ function update( e ) {
 
 	}
 
-	render();
+	texture.render();
 }
 
 function generatorSelected( id ) {
@@ -346,10 +367,12 @@ function generatorSelected( id ) {
 		generatorPanels[ currentGenerator.type ].dom.style.display = "none";
 	}
 
-	if ( texture.steps[ id ] == null )
+	var step = texture.getStepById( id );
+
+	if ( step.index == -1 )
 		return;
 
-	currentGenerator = texture.steps[ id ];
+	currentGenerator = step.value;
 	var type = currentGenerator.type;
 	generatorPanels[ type ].dom.style.display = "block";
 
@@ -371,10 +394,6 @@ function generatorSelected( id ) {
 	}
 
 }
-
-var generatorPanels = {};
-
-var ctx;
 
 function init() {
 
@@ -424,7 +443,7 @@ function init() {
 			switch ( param.type ) {
 
 				case "number": 
-					var c = new UI.Number().setWidth( '50px' ).onChange( update ).setId( idParam );
+					var c = new UI.Number().setWidth( '50px' ).onChange( updateControlParameter ).setId( idParam );
 					if ( param.step )			
 						c.step = param.step;
 
@@ -434,23 +453,23 @@ function init() {
 					break;
 
 				case "vec2i": 
-					var c1 = new UI.Integer().setWidth( '50px' ).onChange( update ).setId( idParam+'.0');
-					var c2 = new UI.Integer().setWidth( '50px' ).onChange( update ).setId( idParam+'.1');
+					var c1 = new UI.Integer().setWidth( '50px' ).onChange( updateControlParameter ).setId( idParam+'.0');
+					var c2 = new UI.Integer().setWidth( '50px' ).onChange( updateControlParameter ).setId( idParam+'.1');
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c1);
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c2);
 					row.add( c1, c2 );
 					break;
 
 				case "vec2f": 
-					var c1 = new UI.Number().setWidth( '50px' ).onChange( update ).setId( idParam+'.0');
-					var c2 = new UI.Number().setWidth( '50px' ).onChange( update ).setId( idParam+'.1');
+					var c1 = new UI.Number().setWidth( '50px' ).onChange( updateControlParameter ).setId( idParam+'.0');
+					var c2 = new UI.Number().setWidth( '50px' ).onChange( updateControlParameter ).setId( idParam+'.1');
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c1);
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c2);
 					row.add( c1, c2 );
 					break;
 
 				case "boolean":
-					var c = new UI.Checkbox().setWidth( '50px' ).onChange( update );
+					var c = new UI.Checkbox().setWidth( '50px' ).onChange( updateControlParameter );
 					TGUI.GeneratorDefinitions[ definitionId ].uiparameters[ idParam ].push(c);
 					row.add( c );
 					break;
@@ -522,17 +541,6 @@ function init3D() {
 	renderScene();	
 }
 
-
-function deleteStep( button, id ) {
-	
-	//if (confirm("Delete this step?")) 
-	{
-		texture.deleteStep( id );		
-//		render();
-	}
-}
-
-
 function showObject( button ) {
 
 	if ( button.id == "cube" )
@@ -551,5 +559,10 @@ function showObject( button ) {
 
 	}
 
-
 }
+
+var texture = new TGUI.Texture();
+var stepList;
+var currentGenerator = null;
+var generatorPanels = {};
+var ctx;
