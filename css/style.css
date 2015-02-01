@@ -4,7 +4,7 @@ canvas {
     width: 256px;
     height: 256px;
     margin: 0 auto;
-    display: block;
+/*    display: block;*/
 }
 
 #render {
@@ -66,3 +66,12 @@ b {
     display:block;
 }
 
+#preview3d {
+    display:inline-block;
+    width: 256px;
+    height: 256px;
+}
+
+.selected {
+    border: 1px solid #ff9;
+}

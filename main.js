@@ -275,7 +275,10 @@ function render() {
 	
 	ctx.putImageData( _texture.toImageData( ctx ), 0, 0 );
 
+	cube.material.map.needsUpdate = true;
+
 }
+
 var stepList;
 
 function add( op ) {
@@ -342,6 +345,8 @@ function init() {
 	canvas.width = textureSize[ 0 ];
 	canvas.height = textureSize[ 1 ];
 	ctx = canvas.getContext('2d');
+
+	init3D();
 
 	var container = new UI.Panel();
 	stepList = new UI.FancySelect();
@@ -423,5 +428,79 @@ function init() {
 		panel.dom.style.display = "none";
 	}
 	document.getElementById("sidebar").appendChild( container.dom );
+
+}
+
+var cube;
+var sphere;
+var material;
+
+function init3D() {
+	
+	var scene = new THREE.Scene();
+	 
+	var container = document.getElementById("preview3d");
+
+	var camera = new THREE.PerspectiveCamera( 75, container.clientWidth / container.clientHeight, 0.1, 1000 );
+	var renderer = new THREE.WebGLRenderer();
+
+	renderer.setSize( container.clientWidth, container.clientHeight );
+	document.getElementById("preview3d").appendChild( renderer.domElement );
+
+	material =  new THREE.MeshBasicMaterial( { 
+		color: 0xffffff, 
+		map: new THREE.Texture( document.getElementById("preview") ) } );
+	
+	// Add cube	 
+	var cubeGeometry = new THREE.BoxGeometry(10,10,10);
+	cube = new THREE.Mesh( cubeGeometry, material );
+	scene.add( cube );
+
+	var sphereGeometry = new THREE.SphereGeometry(10,10,10);
+	sphere = new THREE.Mesh( sphereGeometry, material );
+	scene.add( sphere );
+	sphere.visible = false;
+
+	scene.add( new THREE.AmbientLight( 0x111111 ) );
+
+	camera.position.z = 20;
+ 
+	function render2()
+	{
+		//use requestAnimmationFrame instead of SetInterval
+		requestAnimationFrame(render2);
+		 
+		//update cube rotation
+		var timer = 0.001 * Date.now();
+
+		cube.rotation.y = timer;
+		sphere.rotation.y = timer;
+		 
+		//render
+		renderer.render(scene, camera);
+	}
+	 
+	//start the render loop
+	render2();	
+}
+
+function showObject( button ) {
+
+	if ( button.id == "cube" )
+	{
+		cube.visible = true;
+		sphere.visible = false;
+		button.className = "selected";
+		document.getElementById("sphere").className = "";
+
+	} else {
+
+		cube.visible = false;
+		sphere.visible = true;
+		button.className = "selected";
+		document.getElementById("cube").className = "";
+
+	}
+
 
 }
