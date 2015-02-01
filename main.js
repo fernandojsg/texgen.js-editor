@@ -449,6 +449,7 @@ function init3D() {
 
 	material =  new THREE.MeshBasicMaterial( { 
 		color: 0xffffff, 
+		transparent: true,
 		map: new THREE.Texture( document.getElementById("preview") ) } );
 	
 	// Add cube	 
@@ -465,23 +466,19 @@ function init3D() {
 
 	camera.position.z = 20;
  
-	function render2()
+	function renderScene()
 	{
-		//use requestAnimmationFrame instead of SetInterval
-		requestAnimationFrame(render2);
+		requestAnimationFrame( renderScene );
 		 
-		//update cube rotation
 		var timer = 0.001 * Date.now();
 
 		cube.rotation.y = timer;
 		sphere.rotation.y = timer;
 		 
-		//render
 		renderer.render(scene, camera);
 	}
 	 
-	//start the render loop
-	render2();	
+	renderScene();	
 }
 
 function showObject( button ) {
