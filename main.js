@@ -162,7 +162,6 @@ TGUI.TextureStep = function( id, type ) {
 		this.params[ paramId ] = definition.parameters[ paramId ][ 'default' ];
 	}
 
-	console.log(this.params);
 	this.operation = "+";
 }
 
@@ -293,7 +292,6 @@ function update( e ) {
 	if ( e.srcElement.id.indexOf(".") !== -1 ) {
 
 		var ids = e.srcElement.id.split(".");
-		console.log(currentGenerator.params);
 		currentGenerator.params[ ids[ 0 ] ][ parseInt( ids[ 1 ] ) ] = e.srcElement.value;
 
 	} else {
@@ -319,8 +317,6 @@ function generatorSelected( id ) {
 
 		param = TGUI.GeneratorDefinitions[ type ].uiparameters[ idParam ];
 		
-		console.log(">>>",param);
-
 		if ( param.length > 1 ) {
 		
 			for ( var i = 0; i < param.length; i++ )
