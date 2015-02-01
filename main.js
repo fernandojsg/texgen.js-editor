@@ -56,7 +56,67 @@ TGUI.GeneratorDefinitions = {
 	},
 	"SinY": {
 		generator: TG.SinY,
-		parameters: {}
+		parameters: {
+			"frequency": {
+				"type": "number",
+				"default": 1,
+			},
+			"offset": {
+				"type": "number",
+				"default": 0,
+			},
+		}
+	},
+	"Circle": {
+		generator: TG.Circle,
+		parameters: {
+			"position": {
+				"type": "vec2i",
+				"default": [ 0, 0 ],
+			},
+			"radius": {
+				"type": "number",
+				"default": 50,
+			},
+			"delta": {
+				"type": "number",
+				"default": 1,
+			},
+		}
+	},
+	"SineDistort": {
+		generator: TG.SineDistort,
+		parameters: {
+			"sines": {
+				"type": "vec2i",
+				"default": [ 4, 4 ],
+			},
+			"offset": {
+				"type": "vec2i",
+				"default": [ 0, 0 ],
+			},
+			"amplitude": {
+				"type": "vec2i",
+				"default": [ 16, 16 ],
+			},
+		}
+	},
+	"Twirl": {
+		generator: TG.Twirl,
+		parameters: {
+			"position": {
+				"type": "vec2i",
+				"default": [ 128, 128 ],
+			},
+			"radius": {
+				"type": "number",
+				"default": 120,
+			},
+			"strength": {
+				"type": "number",
+				"default": 0,
+			},
+		}
 	},
 	"Noise": {
 		generator: TG.Noise,
@@ -220,8 +280,18 @@ function generatorSelected( id ) {
 
 		param = TGUI.GeneratorDefinitions[ type ].uiparameters[ idParam ];
 		
-		for ( var i = 0; i < param.length; i++ )
-			param[ i ].setValue( currentGenerator.params[ idParam ][ i ] );
+		console.log(">>>",param);
+
+		if ( param.length > 1 ) {
+		
+			for ( var i = 0; i < param.length; i++ )
+				param[ i ].setValue( currentGenerator.params[ idParam ][ i ] );
+
+		}
+		else {
+
+			param[ 0 ].setValue( currentGenerator.params[ idParam ] );
+		}
 
 	}
 

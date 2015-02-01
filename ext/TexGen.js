@@ -343,6 +343,9 @@ TG.Circle = function () {
 	};
 
 	return new TG.Program( {
+		setParamValue: function ( id, value ) {
+			params[ id ] = value;
+		},
 		delta: function ( value ) {
 			params.delta = value;
 			return this;
@@ -382,6 +385,9 @@ TG.SineDistort = function () {
 	};
 
 	return new TG.Program( {
+		setParamValue: function ( id, value ) {
+			params[ id ] = value;
+		},
 		sines: function ( x, y ) {
 			params.sines = [ x, y ];
 			return this;
@@ -417,6 +423,9 @@ TG.Twirl = function () {
 	};
 
 	return new TG.Program( {
+		setParamValue: function ( id, value ) {
+			params[ id ] = value;
+		},
 		strength: function ( value ) {
 			params.strength = value / 100.0;
 			return this;
