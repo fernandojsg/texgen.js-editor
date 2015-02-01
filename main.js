@@ -114,29 +114,39 @@ TGUI.GeneratorDefinitions = {
 			},
 			"strength": {
 				"type": "number",
-				"default": 0,
+				"default": 0.15,
 			},
 		}
 	},
 	"Noise": {
 		generator: TG.Noise,
 		parameters: {
-			"center": {
+		}
+	},
+	"Pixelate": {
+		generator: TG.Pixelate,
+		parameters: {
+			"size": {
 				"type": "vec2i",
-				"default": [1,2],
+				"default": [ 1, 1 ],
 			},
-			"destination": {
-				"type": "vec2i",
-				"default": [1,2],
+		}
+	},
+	"Transform": {
+		generator: TG.Transform,
+		parameters: {
+			"offset": {
+				"type": "vec2f",
+				"default": [ 0, 0 ],
 			},
-			"invert": {
-				"type": "boolean",
-				"default": true,
+			"scale": {
+				"type": "vec2f",
+				"default": [ 1, 1 ],
 			},
-			"color": {
-				"type": "color",
-				"default": "#ff22ff",
-			}
+			"angle": {
+				"type": "number",
+				"default": 0,
+			},
 		}
 	},
 
@@ -175,6 +185,7 @@ TGUI.Texture = function() {
 
 }
 
+/*
 function nextOperation( but, id ) {
 	
 	var nextOp = operations[ ( operations.indexOf( texture.steps[ id ].operation ) + 1 ) % operations.length ];
@@ -182,6 +193,29 @@ function nextOperation( but, id ) {
 	texture.steps[ id ].operation = nextOp;
 	
 	render();
+}
+*/
+
+function changeOperation( select, id ) {
+
+	texture.steps[ id ].operation = select.value;
+	render();
+}
+
+function generateOperationSelect(id, operation) {
+	
+	var html = '<select onchange="changeOperation(this, \''+(id)+'\')">';
+	for (var i = 0; i < operations.length; i++ ) {
+		if ( operation == operations[ i ] )
+			html+= '<option selected="selected" value="' + operations[ i ]+ '">' + operations[ i ] + '</option>';
+		else
+			html+= '<option value="' + operations[ i ]+ '">' + operations[ i ] + '</option>';
+	}
+
+	html+='</select>';
+	return html;
+
+
 }
 
 TGUI.Texture.prototype = {
@@ -194,7 +228,12 @@ TGUI.Texture.prototype = {
 		var options = [];
 		for (var i=0;i<this.steps.length;i++){
 			var step = this.steps[i];
-			options.push( { value: step.id, html: '<button onclick="nextOperation(this, \''+(step.id)+'\')">'+step.operation+'</button> (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
+			var select = generateOperationSelect( step.id, step.operation );
+			options.push( { value: step.id, html: select + ' (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
+
+			//options.push( { value: step.id, html: '<button onclick="nextOperation(this, \''+(step.id)+'\')">'+step.operation+'</button> (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
+
+			//options.push( { value: step.id, html: '<button onclick="nextOperation(this, \''+(step.id)+'\')">'+step.operation+'</button> (ID=' + step.id + ') ' + step.type +' <button style="display:none;float:right">delete</button>'} );
 		}
 		
 		stepList.setOptions( options );
